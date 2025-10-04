@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download Files - NetStore</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%); min-height: 100vh; padding: 20px; }
+        .navbar { background: rgba(255, 255, 255, 0.95); padding: 15px 30px; border-radius: 15px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .navbar-brand { font-size: 1.5em; font-weight: 700; color: #0c758c; text-decoration: none; }
+        .navbar-links { display: flex; gap: 20px; }
+        .navbar-links a { color: #4a5568; text-decoration: none; font-weight: 500; transition: color 0.3s; }
+        .navbar-links a:hover { color: #6dd5ed; }
+        .container { max-width: 900px; margin: 0 auto; background: rgba(255, 255, 255, 0.95); border-radius: 20px; padding: 50px 40px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+        h1 { color: #2d3748; font-size: 2.2em; margin-bottom: 10px; }
+        .description { color: #718096; margin-bottom: 35px; font-size: 1.05em; display: flex; align-items: center; gap: 8px; }
+        .search-box { margin-bottom: 30px; position: relative; }
+        .search-input { width: 100%; padding: 15px 50px 15px 20px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 1em; transition: border-color 0.3s; }
+        .search-input:focus { outline: none; border-color: #6dd5ed; }
+        .search-icon { position: absolute; right: 20px; top: 50%; transform: translateY(-50%); font-size: 1.2em; color: #a0aec0; }
+        .files-list { display: flex; flex-direction: column; gap: 15px; }
+        .file-item { background: #f7fafc; border: 2px solid #e2e8f0; border-radius: 12px; padding: 20px; display: flex; justify-content: space-between; align-items: center; transition: all 0.3s ease; }
+        .file-item:hover { border-color: #6dd5ed; transform: translateX(5px); box-shadow: 0 4px 12px rgba(109,213,237,0.2); }
+        .file-info-section { display: flex; align-items: center; gap: 20px; flex: 1; }
+        .file-icon { font-size: 2.5em; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg,#6dd5ed 0%,#2193b0 100%); border-radius: 12px; color: white; }
+        .file-details { flex: 1; }
+        .file-name-text { font-weight: 600; color: #2d3748; font-size: 1.1em; margin-bottom: 5px; word-break: break-word; }
+        .file-meta { color: #718096; font-size: 0.9em; display: flex; align-items: center; gap: 8px; }
+        .download-btn { background: linear-gradient(135deg,#6dd5ed 0%,#2193b0 100%); color: white; padding: 12px 28px; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; font-size: 1em; display: flex; align-items: center; gap: 8px; }
+        .download-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(109,213,237,0.4); }
+        .empty-state { text-align: center; padding: 60px 20px; color: #a0aec0; }
+        .empty-icon { font-size: 4em; margin-bottom: 20px; }
+        .empty-text { font-size: 1.2em; margin-bottom: 10px; }
+        .empty-subtext { font-size: 0.95em; }
+        .status-indicator { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #48bb78; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%,100% { opacity:1;} 50%{ opacity:0.5; } }
+        .backup-badge { background: #e6f0ff; color: #6dd5ed; padding: 4px 10px; border-radius: 6px; font-size: 0.8em; font-weight: 600; margin-left: 10px; }
+        @media(max-width:768px){ .navbar{ flex-direction: column; gap:15px; } .container{ padding:35px 25px; } .file-item{ flex-direction: column; gap:20px; text-align:center; } .file-info-section{ flex-direction: column; text-align:center; } .download-btn{ width:100%; justify-content:center; } }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <a href="/" class="navbar-brand">📦 NetStore</a>
+        <div class="navbar-links">
+            <a href="/upload">Upload</a>
+            <a href="/files">View Files</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1>Download Files</h1>
+        <p class="description"><span class="status-indicator"></span> Connected to distributed storage network</p>
+
+        <div class="search-box">
+            <input type="text" class="search-input" id="searchInput" placeholder="Search files...">
+            <span class="search-icon">🔍</span>
+        </div>
+
+        <div class="files-list" id="filesList">
+            <% if (files && files.length > 0) { %>
+                <% files.forEach(function(file) { %>
+                    <div class="file-item" data-filename="<%= file.filename %>">
+                        <div class="file-info-section">
+                            <div class="file-icon">📄</div>
+                            <div class="file-details">
+                                <div class="file-name-text"><%= file.filename %></div>
+                                <div class="file-meta">
+                                    <span><%= file.size %></span>
+                                    <span>• Uploaded <%= file.uploadDate %></span>
+                                    <span class="backup-badge">Replicated</span>
+                                </div>
+                            </div>
+                        </div>
+                        <a href="/download/<%= file.filename %>" class="download-btn">⬇️ Download</a>
+                    </div>
+                <% }); %>
+            <% } else { %>
+                <div class="empty-state">
+                    <div class="empty-icon">📭</div>
+                    <div class="empty-text">No files available</div>
+                    <div class="empty-subtext">Upload some files to get started</div>
+                </div>
+            <% } %>
+        </div>
+    </div>
+
+    <script>
+        const searchInput = document.getElementById('searchInput');
+        const fileItems = document.querySelectorAll('.file-item');
+
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            fileItems.forEach(item => {
+                const filename = item.getAttribute('data-filename').toLowerCase();
+                item.style.display = filename.includes(searchTerm) ? 'flex' : 'none';
+            });
+        });
+    </script>
+</body>
+
+</html>

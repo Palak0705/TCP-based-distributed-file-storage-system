@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Files - NetStore</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%); min-height: 100vh; padding: 20px; }
+        .navbar { background: rgba(255, 255, 255, 0.95); padding: 25px 50px; border-radius: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); }
+        .navbar-brand { font-size: 2em; font-weight: 700; color: #0c758c; text-decoration: none; }
+        .navbar-links { display: flex; gap: 20px; }
+        .navbar-links a { color: #4a5568; text-decoration: none; font-weight: 500; transition: color 0.3s; font-size: 1.2em; padding: 8px 15px; }
+        .navbar-links a:hover { color: #6dd5ed; }
+        .container { max-width: 1200px; margin: 0 auto; background: rgba(255, 255, 255, 0.95); border-radius: 20px; padding: 50px 40px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3); }
+        h1 { color: #2d3748; font-size: 2.2em; margin-bottom: 25px; }
+        .table-container { overflow-x: auto; border-radius: 12px; border: 2px solid #e2e8f0; }
+        table { width: 100%; border-collapse: collapse; background: white; }
+        thead { background: #f7fafc; }
+        th, td { padding: 18px 20px; text-align: left; font-size: 0.95em; }
+        th { font-weight: 600; color: #2d3748; border-bottom: 2px solid #e2e8f0; text-transform: uppercase; letter-spacing: 0.5px; }
+        td { border-bottom: 1px solid #e2e8f0; color: #4a5568; }
+        tbody tr:hover { background-color: #f7fafc; }
+        .filename-cell { font-weight: 600; color: #2d3748; display: flex; align-items: center; gap: 10px; }
+        .file-icon-small { font-size: 1.5em; }
+        .download-btn { background: #6dd5ed; color: white; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-weight: 600; transition: background 0.3s; }
+        .download-btn:hover { background: #2193b0; }
+        .empty-state { text-align: center; padding: 80px 20px; color: #a0aec0; }
+        .empty-icon { font-size: 5em; margin-bottom: 25px; }
+        .empty-text { font-size: 1.3em; margin-bottom: 12px; color: #718096; }
+        .empty-subtext { font-size: 1em; margin-bottom: 30px; }
+        .empty-btn { background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%); color: white; padding: 14px 30px; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 1em; text-decoration: none; display: inline-block; transition: transform 0.3s; }
+        .empty-btn:hover { transform: translateY(-2px); }
+        @media (max-width: 768px) { .navbar { flex-direction: column; gap: 15px; } .container { padding: 35px 20px; } }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <a href="/" class="navbar-brand">📦 NetStore</a>
+        <div class="navbar-links">
+            <a href="/upload">Upload</a>
+            <a href="/files">View Files</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1>Stored Files</h1>
+
+        <% if (files && files.length > 0) { %>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Filename</th>
+                            <th>File Size</th>
+                            <th>Upload Date</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% files.forEach(function(file) { %>
+                            <tr>
+                                <td data-label="Filename">
+                                    <div class="filename-cell">
+                                        <span class="file-icon-small">📄</span>
+                                        <span><%= file.filename %></span>
+                                    </div>
+                                </td>
+                                <td data-label="File Size"><%= file.size || "Unknown" %></td>
+                                <td data-label="Upload Date"><%= file.uploadDate || "Unknown" %></td>
+                                <td data-label="Action">
+                                    <a href="/download/<%= file.filename %>" class="download-btn">Download</a>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            </div>
+        <% } else { %>
+            <div class="empty-state">
+                <div class="empty-icon">📂</div>
+                <div class="empty-text">No files in storage</div>
+                <div class="empty-subtext">Upload your first file to the distributed storage system</div>
+                <a href="/upload" class="empty-btn">Upload File</a>
+            </div>
+        <% } %>
+    </div>
+</body>
+</html>

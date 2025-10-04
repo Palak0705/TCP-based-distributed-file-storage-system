@@ -1,0 +1,56 @@
+✅ Projects (Resume Section)
+
+🌾 Rice Crop Disease Prediction & Fertilizer Recommendation System
+
+Python, PyTorch, Contrastive Learning, OpenCV, Roboflow, Deep Learning
+
+Developed a deep learning system to detect rice crop diseases using contrastive learning on leaf images.
+
+Integrated image classification with fertilizer recommendation logic based on disease type.
+
+Preprocessed and augmented datasets using Roboflow, and visualized model performance using Matplotlib.
+
+Achieved high accuracy in disease prediction using PyTorch-based models.
+
+
+✅ Task Management System using Linked Lists
+
+C++, Data Structures, OOP
+
+Implemented a console-based task manager using singly and doubly linked lists.
+
+Enabled dynamic task addition, deletion, and categorization using DSA concepts.
+
+Applied object-oriented programming principles to ensure modularity and code reusability.
+
+
+✅ Loan Management System (Full Stack Web App)
+
+HTML, CSS, JavaScript, MongoDB, Express.js
+
+Created a full-stack web application for managing loan records with CRUD functionality.
+
+Designed interactive UI using HTML, CSS, JavaScript and implemented backend using Express.js.
+
+Utilized MongoDB for storing user and loan data, with form validation and real-time updates.
+
+
+✅ Course Management System
+
+HTML, CSS, JavaScript, MongoDB, Express.js
+
+Developed a responsive web interface to manage student course registrations.
+
+Enabled data storage and retrieval with MongoDB for persistent course and student records.
+
+Focused on a clean frontend using HTML/CSS and dynamic form handling with JavaScript and implemented backend using Express.js.
+
+🖥 Multitasking Operating System Simulation with Paging
+
+C, Operating Systems, Paging, Memory Management, Process Scheduling
+
+Built a simulation of a multitasking operating system in C to manage tasks like downloading, gaming, and media playback, each with defined priorities.
+Implemented paging-based memory management to allocate memory dynamically for each process.
+Simulated a job scheduler with priority-based execution, ensuring high-priority tasks were completed before lower-priority ones.
+Displayed updated memory state after each job execution to visualize page allocation, page table handling, and task switching.
+Reinforced core OS concepts such as process lifecycle, page replacement, and memory protection.

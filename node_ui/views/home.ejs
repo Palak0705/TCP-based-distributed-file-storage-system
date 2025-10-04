@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NetStore - Distributed File Storage</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 60px 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            color: white;
+            box-shadow: 0 10px 25px rgba(109, 213, 237, 0.4);
+        }
+
+        h1 {
+            color: #2d3748;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            color: #718096;
+            font-size: 1.1em;
+            margin-bottom: 50px;
+            font-weight: 400;
+        }
+
+        .nav-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            width: 100%;
+        }
+
+        .nav-btn {
+            background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%);
+            color: white;
+            padding: 30px 40px;
+            border: none;
+            border-radius: 16px;
+            font-size: 1.4em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            width: 100%;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            box-shadow: 0 4px 15px rgba(109, 213, 237, 0.4);
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(109, 213, 237, 0.5);
+        }
+
+        .nav-btn:active {
+            transform: translateY(0);
+        }
+
+        .icon {
+            font-size: 1.6em;
+        }
+
+        .footer {
+            margin-top: 40px;
+            color: #a0aec0;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 40px 25px;
+            }
+            h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="logo">📦</div>
+        <h1 >NetStore</h1>
+        <p class="subtitle">Distributed File Storage System</p>
+
+        <div class="nav-buttons">
+            <!-- Upload File -->
+            <a href="/upload" class="nav-btn">
+                <span class="icon">⬆️</span>
+                <span>Upload File</span>
+            </a>
+
+            <!-- View Files -->
+            <a href="/files" class="nav-btn">
+                <span class="icon">📋</span>
+                <span>View Files</span>
+            </a>
+        </div>
+
+        <div class="footer">
+            Secure • Replicated • Always Available
+        </div>
+    </div>
+</body>
+
+</html>
