@@ -1,11 +1,31 @@
+// ---------------- IMPORTS ----------------
 const express = require("express");
 const multer = require("multer");
 const net = require("net");
 const fs = require("fs");
 const path = require("path");
+const session = require("express-session");
+const bcrypt = require("bcrypt");
+const db = require("./auth");
 
 const app = express();
-const PORT = 3000;
+const PORT = 8000;
+
+// ---------------- MIDDLEWARES ----------------
+// ---------------- MIDDLEWARES ----------------
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json()); // <-- Add this for JSON requests
+
+// Temporary user storage (replace with DB later)
+const users = [];
+
+app.use(
+  session({
+    secret: "secret-key",
+    resave: false,
+    saveUninitialized: true,
+  })
+);
 
 // Multer setup for file uploads
 const upload = multer({ dest: "uploads/" });
@@ -18,20 +38,79 @@ const PYTHON_PORT = 5000;
 app.set("view engine", "ejs");
 app.use(express.static("public"));
 
+// Middleware to check login
+function requireLogin(req, res, next) {
+  if (!req.session.user) {
+    return res.redirect("/login");
+  }
+  next();
+}
+
 // ---------------- ROUTES ----------------
 
-// 1️⃣ Home Page
+// 🏠 Home Page
 app.get("/", (req, res) => {
-  res.render("home");
+  if (!req.session.user) {
+    return res.redirect("/login");
+  }
+  res.render("home", { user: req.session.user });
 });
 
-// 2️⃣ Upload Page
-app.get("/upload", (req, res) => {
+// ---------------- AUTHENTICATION ----------------
+
+// Register Page
+app.get("/register", (req, res) => {
+  res.render("register");
+});
+
+app.post("/register", (req, res) => {
+  const { username, password } = req.body;
+
+  // Example simple in-memory storage (replace with database in future)
+  const existingUser = users.find(u => u.username === username);
+
+  if (existingUser) {
+    return res.json({ success: false, message: "Username already exists!" });
+  }
+
+  users.push({ username, password });
+  return res.json({ success: true, message: "Registration successful!" });
+});
+
+
+// Login Page
+app.get("/login", (req, res) => {
+  res.render("login");
+});
+
+app.post("/login", (req, res) => {
+  const { username, password } = req.body;
+  const user = users.find(u => u.username === username && u.password === password);
+
+  if (user) {
+    req.session.user = user;
+    return res.json({ success: true, message: "Login successful" });
+  } else {
+    return res.json({ success: false, message: "Invalid username or password" });
+  }
+});
+
+
+// Logout
+app.get("/logout", (req, res) => {
+  req.session.destroy();
+  res.redirect("/login");
+});
+
+// ---------------- FILE HANDLING ----------------
+
+// Upload Page
+app.get("/upload", requireLogin, (req, res) => {
   res.render("upload");
 });
 
 // Handle Upload POST
-app.post("/upload", upload.single("file"), (req, res) => {
+app.post("/upload", requireLogin, upload.single("file"), (req, res) => {
   const filename = req.file.originalname;
   const filepath = req.file.path;
 
@@ -40,8 +119,6 @@ app.post("/upload", upload.single("file"), (req, res) => {
 
   client.connect(PYTHON_PORT, PYTHON_HOST, () => {
     console.log("Connected to Python server for upload");
-
-    // Send upload command first
     client.write(`UPLOAD ${filename}\n`);
   });
 
@@ -49,7 +126,6 @@ app.post("/upload", upload.single("file"), (req, res) => {
     const msg = data.toString().trim();
 
     if (msg === "READY") {
-      // Python server is ready; send file data
       const fileData = fs.readFileSync(filepath);
       client.write(fileData);
     }
@@ -73,7 +149,8 @@ app.post("/upload", upload.single("file"), (req, res) => {
   });
 });
 
-app.get("/files", (req, res) => {
+// List Files
+app.get("/files", requireLogin, (req, res) => {
   const client = new net.Socket();
   client.setTimeout(5000);
 
@@ -89,7 +166,7 @@ app.get("/files", (req, res) => {
 
   client.on("end", () => {
     try {
-      const files = JSON.parse(receivedData); // now valid JSON
+      const files = JSON.parse(receivedData);
       res.render("files", { files });
     } catch (err) {
       console.error("Failed to parse file list:", err);
@@ -109,10 +186,8 @@ app.get("/files", (req, res) => {
   });
 });
 
-
-
-// 4️⃣ Download File
-app.get("/download/:filename", (req, res) => {
+// Download File
+app.get("/download/:filename", requireLogin, (req, res) => {
   const filename = req.params.filename;
   const client = new net.Socket();
   let fileBuffer = Buffer.alloc(0);
@@ -129,14 +204,13 @@ app.get("/download/:filename", (req, res) => {
 
     if (!fileTransferStarted) {
       if (message.startsWith("EXISTS")) {
-        client.write("ACK"); // ✅ tell Python we are ready
+        client.write("ACK");
         fileTransferStarted = true;
       } else if (message.startsWith("FILE_NOT_FOUND")) {
         res.send("❌ File not found on server.");
         client.destroy();
       }
     } else {
-      // ✅ now this is actual file content
       fileBuffer = Buffer.concat([fileBuffer, data]);
     }
   });
@@ -164,8 +238,41 @@ app.get("/download/:filename", (req, res) => {
   });
 });
 
+// Delete File
+app.post("/delete/:filename", requireLogin, (req, res) => {
+  const filename = req.params.filename;
+  const client = new net.Socket();
+
+  client.setTimeout(5000);
+
+  client.connect(PYTHON_PORT, PYTHON_HOST, () => {
+    client.write(`DELETE ${filename}\n`);
+  });
+
+  client.on("data", (data) => {
+    const message = data.toString().trim();
+    if (message === "DELETE_SUCCESS") {
+      console.log(`Deleted file: ${filename}`);
+      res.redirect("/files");
+    } else if (message === "FILE_NOT_FOUND") {
+      res.send("❌ File not found on server.");
+    }
+    client.end();
+  });
+
+  client.on("error", (err) => {
+    console.error("Error deleting file:", err);
+    res.send("❌ Delete failed.");
+  });
+
+  client.on("timeout", () => {
+    console.error("Delete timeout");
+    res.send("❌ Delete timed out.");
+    client.destroy();
+  });
+});
 
 // ---------------- START SERVER ----------------
 app.listen(PORT, () => {
-  console.log(`NetStore UI running at http://localhost:${PORT}`);
+  console.log(`🚀 NetStore UI running at http://localhost:${PORT}`);
 });
