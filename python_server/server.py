@@ -31,9 +31,35 @@ def replicate_file(filename):
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 s.connect((ip, port))
                 s.sendall(f'REPLICATE {filename}\n'.encode())
-                send_file(s, os.path.join(UPLOAD_FOLDER, filename))
+                response = s.recv(1024).decode().strip()
+
+                if response == 'READY':
+                    send_file(s, os.path.join(UPLOAD_FOLDER, filename))
+                    print(f"Replicated {filename} to backup {ip}:{port}")
+                else:
+                    print(f"Backup {ip}:{port} did not respond with READY.")
         except Exception as e:
             print(f"Backup server {ip}:{port} not reachable: {e}")
+
+def delete_from_backups(filename):
+    for ip, port in BACKUP_SERVERS:
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.connect((ip,port))
+                s.sendall(f'DELETE {filename}\n'.encode())
+            print(f"Deleted {filename} on backup {ip}:{port}: {e}")
+        except Exception as e:
+            print(f"Could not delete {filename} on backup {ip}:{port}: {e}")
+
+
+def replicate_to_backups(command, filename):
+    for host, port in BACKUP_SERVERS:
+        try:
+            with socket.create_connection((host, port), timeout=5) as s:
+                s.sendall(f"{command} {filename}".encode())
+        except Exception as e:
+            print(f"Replication to backup failed ({host}:{port}) - {e}")
+
 
 # Handle each client
 def handle_client(client_socket, addr):
@@ -61,7 +87,7 @@ def handle_client(client_socket, addr):
                         f.write(data)
 
                 client_socket.sendall(b'UPLOAD_SUCCESS')
-                print(f"File uploaded: {filename}")
+                print(f"[UPLOAD] File received: {filename}")
 
                 threading.Thread(target=replicate_file, args=(filename,), daemon=True).start()
 
@@ -81,7 +107,7 @@ def handle_client(client_socket, addr):
                 # Send only JSON string
                 client_socket.sendall(json.dumps(file_list).encode())
                 client_socket.close()  # close after sending
-
+                break
             # ---------------- DOWNLOAD ----------------
             elif command == 'DOWNLOAD':
                 filename = parts[1]
@@ -90,9 +116,23 @@ def handle_client(client_socket, addr):
                     client_socket.sendall(b'EXISTS\n')
                     ack = client_socket.recv(1024)
                     send_file(client_socket, filepath)
+                    print(f"[DOWNLOAD] Sent: {filename}")
                 else:
                     client_socket.sendall(b'FILE_NOT_FOUND\n')
                 client_socket.close()
+                break
+
+            elif command == 'DELETE':
+                filename = parts[1]
+                filepath = os.path.join(UPLOAD_FOLDER, filename)
+                if os.path.exists(filepath):
+                    os.remove(filepath)
+                    print(f"Deleted file: {filename}")
+                    replicate_to_backups('DELETE', filename)
+                    client_socket.sendall(b'DELETE_SUCCESS')
+                else:
+                    client_socket.sendall(b'FILE_NOT_FOUND')
+
 
             # ---------------- EXIT ----------------
             elif command == 'EXIT':

@@ -4,7 +4,7 @@ import os
 
 HOST = '127.0.0.1'
 PORT = 5001  # Use 5002 for backup2.py
-UPLOAD_FOLDER = 'backup_uploads'
+UPLOAD_FOLDER = 'backup1'
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
@@ -34,6 +34,15 @@ def handle_client(client_socket, addr):
                 filename = parts[1]
                 client_socket.sendall(b'READY')
                 receive_file(client_socket, filename)
+
+            elif command == 'DELETE':
+                filename = parts[1]
+                filepath = os.path.join(UPLOAD_FOLDER, filename)
+                if os.path.exists(filepath):
+                    os.remove(filepath)
+                    print(f"Deleted file: {filename}")
+                else:
+                    print(f"File not found for deletion: {filename}")
 
             elif command == 'EXIT':
                 break
